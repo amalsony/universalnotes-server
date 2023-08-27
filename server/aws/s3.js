@@ -4,8 +4,8 @@ const {
   DeleteObjectCommand,
   GetObjectCommand,
 } = require("@aws-sdk/client-s3");
-// const { getSignedUrl } = require("@aws-sdk/s3-request-presigner");
-const { getSignedUrl } = require("@aws-sdk/cloudfront-signer");
+const { getSignedUrl } = require("@aws-sdk/s3-request-presigner");
+// const { getSignedUrl } = require("@aws-sdk/cloudfront-signer");
 
 const bucketName = process.env.BUCKET_NAME;
 const region = process.env.BUCKET_REGION;

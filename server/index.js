@@ -106,11 +106,11 @@ app.post(
 
 app.get("/api/garments", async (req, res) => {
   try {
-    const garments = await Garment.find({});
+    const databaseGarments = await Garment.find({});
 
     // for each garment, get the signed url
-    const sendGarments = await Promise.all(
-      garments.map(async (garment) => {
+    const garments = await Promise.all(
+      databaseGarments.map(async (garment) => {
         const signedUrl = await getObjectSignedUrl(garment.image_url);
         return {
           ...garment._doc,
@@ -121,7 +121,7 @@ app.get("/api/garments", async (req, res) => {
 
     res.status(200).json({
       success: true,
-      data: sendGarments,
+      data: garments,
     });
   } catch (err) {
     res.status(400).json({
