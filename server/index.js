@@ -104,6 +104,21 @@ app.post(
   }
 );
 
+app.get("/api/garments", async (req, res) => {
+  try {
+    const garments = await Garment.find({});
+    res.status(200).json({
+      success: true,
+      data: garments,
+    });
+  } catch (err) {
+    res.status(400).json({
+      success: false,
+      error: err,
+    });
+  }
+});
+
 app.listen(port, () => {
   console.log(`Server is listening on port ${port}`);
 });
