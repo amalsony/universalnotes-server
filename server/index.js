@@ -107,9 +107,21 @@ app.post(
 app.get("/api/garments", async (req, res) => {
   try {
     const garments = await Garment.find({});
+
+    // for each garment, get the signed url
+    const sendGarments = await Promise.all(
+      garments.map(async (garment) => {
+        const signedUrl = await getObjectSignedUrl(garment.image_url);
+        return {
+          ...garment._doc,
+          image_url: signedUrl,
+        };
+      })
+    );
+
     res.status(200).json({
       success: true,
-      data: garments,
+      data: sendGarments,
     });
   } catch (err) {
     res.status(400).json({
