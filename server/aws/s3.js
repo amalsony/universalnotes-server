@@ -7,8 +7,6 @@ const {
 // const { getSignedUrl } = require("@aws-sdk/s3-request-presigner");
 const { getSignedUrl } = require("@aws-sdk/cloudfront-signer");
 
-require("dotenv").config();
-
 const bucketName = process.env.BUCKET_NAME;
 const region = process.env.BUCKET_REGION;
 const accessKeyId = process.env.ACCESS_KEY;
