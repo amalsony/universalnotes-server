@@ -180,11 +180,12 @@ app.post("/api/generate-outfit", async (req, res) => {
     };
     request = JSON.stringify(request);
 
-    const outfit = JSON.parse(await generateOutfit(request)).outfit;
+    const data = JSON.parse(await generateOutfit(request));
+    const caption = data.caption;
 
     // fetch the garments from the database
     const sendOutfit = await Promise.all(
-      outfit.map(async (garment) => {
+      data.outfit.map(async (garment) => {
         const databaseGarment = await Garment.findById(garment.id);
 
         if (!databaseGarment) {
@@ -211,7 +212,139 @@ app.post("/api/generate-outfit", async (req, res) => {
       success: true,
       data: {
         outfit: sendOutfit,
-        caption: JSON.parse(await generateOutfit(request)).caption,
+        caption,
+      },
+    });
+  } catch (err) {
+    res.status(400).json({
+      success: false,
+      error: err,
+    });
+  }
+});
+
+app.post("/api/get-example-prompt", async (req, res) => {
+  try {
+    const { prompt } = req.body;
+
+    console.log("request received");
+
+    const userGarments = await Garment.find({});
+
+    console.log("garments fetched");
+
+    // create a new array of garments with the _id, name, colors, brand and type
+    const garments = userGarments.map((garment) => {
+      return {
+        _id: garment._id,
+        name: garment.name,
+        colors: garment.colors,
+        brand: garment.brand,
+      };
+    });
+
+    let request = {
+      prompt: prompt.toString(),
+      garments,
+    };
+    request = JSON.stringify(request);
+
+    res.status(200).json({
+      success: true,
+      data: {
+        prompt: request,
+      },
+    });
+  } catch (err) {
+    res.status(400).json({
+      success: false,
+      error: err,
+    });
+  }
+});
+
+app.post("/api/get-example-response", async (req, res) => {
+  try {
+    const { prompt } = req.body;
+
+    const userGarments = await Garment.find({});
+
+    // create a new array of garments with the _id, name, colors, brand and type
+    const garments = userGarments.map((garment) => {
+      return {
+        _id: garment._id,
+        name: garment.name,
+        colors: garment.colors,
+        brand: garment.brand,
+        type: garment.type,
+      };
+    });
+
+    let request = {
+      prompt: prompt.toString(),
+      garments,
+    };
+    request = JSON.stringify(request);
+
+    const responseString = await generateOutfit(request);
+
+    res.status(200).json({
+      success: true,
+      data: {
+        responseString,
+      },
+    });
+  } catch (err) {
+    res.status(400).json({
+      success: false,
+      error: err,
+    });
+  }
+});
+
+app.post("/api/get-example-processing", async (req, res) => {
+  try {
+    const responseString = "{\n  \"outfit\": [\n    {\n      \"category\": \"top\",\n      \"id\": \"64ebce755c909f6413473f92\"\n    },\n    {\n      \"category\": \"bottom\",\n      \"id\": \"64ec0ffc214c017e9400332d\"\n    }\n  ],\n  \"caption\": \"Wear the H&M white hoodie with the slim fit black twill trouser from Tommy Hilfiger for a casual yet chic look perfect for a day out in NYC\"\n}" // prettier-ignore
+
+    console.log("request received");
+
+    const outfit = JSON.parse(responseString).outfit;
+
+    console.log("outfit parsed");
+
+    console.log(outfit);
+
+    // fetch the garments from the database
+    const sendOutfit = await Promise.all(
+      outfit.map(async (garment) => {
+        console.log("check");
+        const databaseGarment = await Garment.findById(garment.id);
+
+        if (!databaseGarment) {
+          return res.status(404).json({
+            success: false,
+            error: "Garment not found",
+          });
+        }
+
+        const signedUrl = await getObjectSignedUrl(databaseGarment.image_url);
+
+        return {
+          // get type from generateOutfit function
+          type: garment.category,
+          name: databaseGarment.name,
+          brand: databaseGarment.brand,
+          colors: databaseGarment.colors,
+          image_url: signedUrl,
+        };
+      })
+    );
+
+    res.status(200).json({
+      success: true,
+      data: {
+        outfit: sendOutfit,
+        // caption: JSON.parse(await generateOutfit(request)).caption,
       },
     });
   } catch (err) {

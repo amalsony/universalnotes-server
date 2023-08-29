@@ -4,9 +4,9 @@ const openai = new OpenAI(process.env.OPENAI_API_KEY);
 
 // settings
 const systemString = `
-You are a virtual fashion advisor that creates outfit recommendations based on the wardrobe that a user has which is presented in a json format, with an id for each item and its features, along with the dress style the user is looking for "casual, smart casual, formal, trendy, creative, bold"
+You are a virtual fashion advisor that creates outfit recommendations based on the wardrobe that a user has which is presented in a json format, with an id for each item and its features, along with a prompt telling you what the user is dressing for.
 
-Based on the dress style the user is looking for, mix and match the outfits in the user's wardrobe to create a complete outfit along with caption with instructions on how to construct the outfit.
+Based on the prompt, mix and match the outfits in the user's wardrobe to create a complete outfit along with caption with instructions on how to construct the outfit. Regardless of the prompt, the outfit field should only have one top and one bottom.
 
 Here is an example of what your output might look like as a json object:
 
@@ -15,23 +15,10 @@ Example 1: {
     {
       "category": "top",
       "id": "2d1djjn12",
-      "name": "H&M flannel",
-      "color": "yellow, gray, white",
-      "brand": "H&M"
-    },
-    {
-      "category": "top",
-      "id": "mf323u01",
-      "name": "inner cotton shirt",
-      "color": "white",
-      "brand": "Suit supply"
     },
     {
       "category": "bottom",
       "id": "h98j2fj23",
-      "name": "kakhi shorts",
-      "color": "cream",
-      "brand": "GAP"
     }
   ],
   "caption": "Wear the flannel unbuttoned over the inner cotton shirt, along with kakhi shorts and pick a pair of casual shoes you own"
@@ -42,9 +29,6 @@ Example 2: {
     {
       "category": "top",
       "id": "2d1djjn12",
-      "name": "cocktail dress",
-      "color": "blue",
-      "brand": "Prada"
     }
   ],
   "caption": "Match the dress with blue high heels"
@@ -65,33 +49,40 @@ const generateOutfit = async (prompt) => {
   //   stop: ["\n", "testing"],
   // });
 
-  // const gptResponse = await openai.chat.completions.create({
-  //   messages: [
-  //     { role: "system", content: systemString },
-  //     { role: "user", content: prompt },
-  //   ],
-  //   model: "gpt-4",
-  // });
+  const startTime = Date.now();
 
-  // return gptResponse.choices[0].message.content;
-  return `{
-  "outfit": [
-    {
-      "category": "top",
-      "id": "64ebe24bbcf91adf95befdef",
-      "name": "Wilson red white and blue tshirt",
-      "color": "red",
-      "brand": "Wilson"
-    },
-    {
-      "category": "bottom",
-      "id": "64ec0ffc214c017e9400332d",
-      "name": "Slim Fit Black Twill Trouser",
-      "color": "black",
-      "brand": "Tommy Hilfiger"
-  ],
-  "caption": "Match the dress with blue high heels"
-  }`;
+  const gptResponse = await openai.chat.completions.create({
+    messages: [
+      { role: "system", content: systemString },
+      { role: "user", content: prompt },
+    ],
+    model: "gpt-4",
+    max_tokens: 256,
+    temperature: 1,
+    top_p: 1,
+    frequency_penalty: 0,
+    presence_penalty: 0,
+  });
+
+  return gptResponse.choices[0].message.content;
+  // return `{
+  // "outfit": [
+  //   {
+  //     "category": "top",
+  //     "id": "64ebe24bbcf91adf95befdef",
+  //     "name": "Wilson red white and blue tshirt",
+  //     "color": "red",
+  //     "brand": "Wilson"
+  //   },
+  //   {
+  //     "category": "bottom",
+  //     "id": "64ec0ffc214c017e9400332d",
+  //     "name": "Slim Fit Black Twill Trouser",
+  //     "color": "black",
+  //     "brand": "Tommy Hilfiger"
+  // ],
+  // "caption": "Match the dress with blue high heels"
+  // }`;
 };
 
 module.exports = generateOutfit;
