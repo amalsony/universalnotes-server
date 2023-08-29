@@ -65,15 +65,16 @@ const generateOutfit = async (prompt) => {
   //   stop: ["\n", "testing"],
   // });
 
-  const gptResponse = await openai.chat.completions.create({
-    messages: [
-      { role: "system", content: systemString },
-      { role: "user", content: prompt },
-    ],
-    model: "gpt-4",
-  });
+  // const gptResponse = await openai.chat.completions.create({
+  //   messages: [
+  //     { role: "system", content: systemString },
+  //     { role: "user", content: prompt },
+  //   ],
+  //   model: "gpt-4",
+  // });
 
-  return gptResponse.choices[0].message.content;
+  // return gptResponse.choices[0].message.content;
+  return "successfully got to here";
 };
 
 module.exports = generateOutfit;
