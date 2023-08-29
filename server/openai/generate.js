@@ -74,7 +74,24 @@ const generateOutfit = async (prompt) => {
   // });
 
   // return gptResponse.choices[0].message.content;
-  return "successfully got to here";
+  return `{
+  "outfit": [
+    {
+      "category": "top",
+      "id": "64ebe24bbcf91adf95befdef",
+      "name": "Wilson red white and blue tshirt",
+      "color": "red",
+      "brand": "Wilson"
+    },
+    {
+      "category": "bottom",
+      "id": "64ec0ffc214c017e9400332d",
+      "name": "Slim Fit Black Twill Trouser",
+      "color": "black",
+      "brand": "Tommy Hilfiger"
+  ],
+  "caption": "Match the dress with blue high heels"
+  }`;
 };
 
 module.exports = generateOutfit;
