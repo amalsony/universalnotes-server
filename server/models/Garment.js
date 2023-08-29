@@ -2,10 +2,6 @@ const mongoose = require("mongoose");
 const { Schema } = mongoose;
 
 const GarmentSchema = new Schema({
-  type: {
-    type: String,
-    required: true,
-  },
   name: {
     type: String,
     required: true,

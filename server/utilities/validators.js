@@ -1,9 +1,5 @@
-module.exports.validateGarmentInput = (type, name, brand, colors) => {
+module.exports.validateGarmentInput = (name, brand, colors) => {
   const errors = {};
-
-  if (!type || type.trim() === "") {
-    errors.type = "Type must not be empty";
-  }
 
   if (!name || name.trim() === "") {
     errors.name = "Name must not be empty";
