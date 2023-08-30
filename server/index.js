@@ -90,20 +90,23 @@ app.post(
 
       // Save the garment to the database
       await garment.save();
+
+      res.status(201).json({
+        success: true,
+        data: garment,
+      });
     } catch (err) {
       res.status(400).json({
         success: false,
         error: err,
       });
-
-      console.log(err);
     }
   }
 );
 
 app.get("/api/garments", async (req, res) => {
   try {
-    const databaseGarments = await Garment.find({});
+    const databaseGarments = await Garment.find({}).sort({ createdAt: -1 });
 
     // for each garment, get the signed url
     const garments = await Promise.all(
