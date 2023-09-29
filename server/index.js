@@ -1,5 +1,3 @@
-require("dotenv").config();
-
 const express = require("express");
 const cors = require("cors");
 const app = express();
@@ -15,7 +13,6 @@ app.use(express.json());
 
 // Routes
 const authRoutes = require("./routes/authRoutes");
-const testRoutes = require("./routes/testRoutes");
 const garmentRoutes = require("./routes/garmentRoutes");
 const outfitRoutes = require("./routes/outfitRoutes");
 const userRoutes = require("./routes/userRoutes");
