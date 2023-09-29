@@ -20,13 +20,17 @@ const s3Client = new S3Client({
   },
 });
 
-function uploadFile(fileBuffer, fileName, mimetype) {
+function uploadFile(fileBuffer, fileName, mimetype, acl) {
   const uploadParams = {
     Bucket: bucketName,
     Body: fileBuffer,
     Key: fileName,
     ContentType: mimetype,
   };
+
+  if (acl) {
+    uploadParams.ACL = acl;
+  }
 
   return s3Client.send(new PutObjectCommand(uploadParams));
 }

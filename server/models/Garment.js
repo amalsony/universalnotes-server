@@ -14,8 +14,20 @@ const GarmentSchema = new Schema({
     type: [String],
     required: true,
   },
+  category: {
+    type: String,
+    required: true,
+  },
   image_url: {
     type: String,
+  },
+  user: {
+    type: Schema.Types.ObjectId,
+    ref: "User",
+  },
+  embedding: {
+    type: [Number],
+    required: true,
   },
   createdAt: {
     type: String,
