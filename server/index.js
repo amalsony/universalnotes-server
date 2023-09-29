@@ -19,7 +19,6 @@ const userRoutes = require("./routes/userRoutes");
 
 // Use routes
 app.use("/auth", authRoutes); // Auth Routes
-app.use("/test", testRoutes); // Test Routes
 app.use("/garments", garmentRoutes); // Garment Routes
 app.use("/outfits", outfitRoutes); // Outfit Routes
 app.use("/user", userRoutes); // User Routes
