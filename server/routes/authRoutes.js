@@ -390,8 +390,18 @@ router.post("/apple", async (req, res) => {
   // get the public keys
   const publicKeys = applePublicKeyResponse.data.keys;
 
-  // validate the identity token
-  const decodedToken = jwt.decode(identityToken, { complete: true });
+  let decodedToken;
+
+  try {
+    decodedToken = jwt.decode(identityToken, { complete: true });
+  } catch (err) {
+    console.error("Token decoding failed:", err);
+    return res.status(401).json({
+      success: false,
+      error: "Invalid token",
+    });
+  }
+
   const kid = decodedToken.header.kid;
   const publicKey = publicKeys.find((key) => key.kid === kid);
 
@@ -410,21 +420,17 @@ router.post("/apple", async (req, res) => {
       algorithms: [publicKey.alg],
     };
 
-    const verifiedToken = jwt.verify(
-      identityToken,
-      pem,
-      verificationOptions,
-      (err, decoded) => {
-        if (err) {
-          return res.status(401).json({
-            success: false,
-            error: "Token verification failed",
-          });
-        }
+    let verifiedToken;
 
-        return decoded;
-      }
-    );
+    try {
+      // Verify the token
+      verifiedToken = jwt.verify(identityToken, pem, verificationOptions);
+    } catch (err) {
+      return res.status(401).json({
+        success: false,
+        error: "Token verification failed",
+      });
+    }
 
     // get the user's email
     const email = verifiedToken.email;
@@ -471,6 +477,14 @@ router.post("/apple", async (req, res) => {
     }
 
     // if the user does not exist, create a new user and generate a token
+
+    if (!fullName || typeof fullName !== "string") {
+      console.log("Missing full name");
+      return res.status(400).json({
+        success: false,
+        error: "Missing full name",
+      });
+    }
 
     // create a new user
     const newUser = new User({
