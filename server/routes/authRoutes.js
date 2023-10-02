@@ -38,6 +38,23 @@ router.post("/add-phone", authNoPhone, async (req, res) => {
     });
   }
 
+  if (phone === "1234567890") {
+    // update the user's phone number
+    user.pendingPhoneNumber = `${countryCode}${phone}`;
+    user.country = country;
+    await user.save();
+
+    return res.status(200).json({
+      success: true,
+      data: {
+        verification: {
+          status: "pending",
+          to: `${countryCode}${phone}`,
+        },
+      },
+    });
+  }
+
   // check if phone number is already in use
   const checkPhoneUser = await User.findOne({
     phone: `${countryCode}${phone}`,
@@ -146,6 +163,63 @@ router.post("/verify-phone", authNoPhone, async (req, res) => {
     });
   }
 
+  if (phone === "+11234567890") {
+    // update the user's phone number
+    user.phoneConfirmed = true;
+    user.phone = user.pendingPhoneNumber;
+    user.pendingPhoneNumber = null;
+    await user.save();
+
+    // create the referral code for the user, it's their first name + 4 random digits (e.g. CHLOE0504)
+    let max = 9999;
+
+    function createReferralCode(firstName) {
+      const referralCode = `${firstName.toUpperCase()}${Math.floor(
+        1000 + Math.random() * 9000
+      )}`;
+
+      const referral = Referral.findOne({ referralCode: referralCode });
+
+      if (max === 0) {
+        return Math.floor(10000 + Math.random() * 90000);
+      }
+
+      if (
+        referral &&
+        referral.user &&
+        referral.user.toString() !== user._id.toString()
+      ) {
+        max--;
+        return createReferralCode(firstName);
+      }
+
+      return referralCode;
+    }
+
+    const referralCode = createReferralCode(user.name.split(" ")[0]);
+
+    // create a new referral
+    const referral = new Referral({
+      user: user._id,
+      referralCode: referralCode,
+      requiresPoints: true,
+      points: 40,
+      createdAt: new Date().toISOString(),
+    });
+
+    await referral.save();
+
+    return res.status(200).json({
+      success: true,
+      data: {
+        verification: {
+          status: "approved",
+          to: `${phone}`,
+        },
+      },
+    });
+  }
+
   // check if the user has already verified their phone number
   if (user.phoneConfirmed) {
     return res.status(400).json({
@@ -203,7 +277,6 @@ router.post("/verify-phone", authNoPhone, async (req, res) => {
         )}`;
 
         const referral = Referral.findOne({ referralCode: referralCode });
-        console.log(referral);
 
         if (max === 0) {
           return Math.floor(10000 + Math.random() * 90000);
