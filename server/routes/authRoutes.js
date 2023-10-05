@@ -413,7 +413,6 @@ router.post("/google", async (req, res) => {
     username: email,
     profilePic: googleResponse.data.picture,
     emailConfirmed: true,
-    phoneConfirmed: true,
   });
 
   // save the user to the database
@@ -430,16 +429,6 @@ router.post("/google", async (req, res) => {
       expiresIn: "30d",
     }
   );
-
-  // create a referral and set requiresPoints to false
-  const referral = new Referral({
-    user: newUser._id,
-    referralCode: `${newUser.name.split(" ")[0].toUpperCase()}${Math.floor(
-      1000 + Math.random() * 9000
-    )}`,
-    requiresPoints: false,
-    createdAt: new Date().toISOString(),
-  });
 
   // send the token back
   res.status(200).json({
@@ -547,6 +536,7 @@ router.post("/google-web", async (req, res) => {
     username: email,
     profilePic: googleResponse.picture,
     emailConfirmed: true,
+    phoneConfirmed: true,
   });
 
   // save the user to the database
@@ -563,6 +553,19 @@ router.post("/google-web", async (req, res) => {
       expiresIn: "30d",
     }
   );
+
+  // create a referral and set requiresPoints to false
+  const referral = new Referral({
+    user: newUser._id,
+    referralCode: `${newUser.name.split(" ")[0].toUpperCase()}${Math.floor(
+      1000 + Math.random() * 9000
+    )}`,
+    requiresPoints: false,
+    points: 40,
+    createdAt: new Date().toISOString(),
+  });
+
+  await referral.save();
 
   // send the token back
   res.status(200).json({
