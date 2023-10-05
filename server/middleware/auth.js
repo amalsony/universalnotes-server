@@ -30,6 +30,7 @@ const auth = async (req, res, next) => {
 
     next();
   } catch (error) {
+    console.log(error);
     res.status(400).json({
       success: false,
       error: "Invalid token",

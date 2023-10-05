@@ -8,6 +8,7 @@ const auth = require("../middleware/auth");
 const authNoPhone = require("../middleware/authNoPhone");
 const { certToPEM } = require("pem-jwk");
 const jwkToPem = require("jwk-to-pem");
+const { OAuth2Client } = require("google-auth-library");
 
 // Twilio imports
 const accountSid = process.env.TWILIO_ACCOUNT_SID;
@@ -392,7 +393,7 @@ router.post("/google", async (req, res) => {
       data: {
         token,
         user: sendUser,
-        isPhoneVerified: user.phoneConfirmed,
+        isPhoneVerified: true,
       },
     });
   }
@@ -411,6 +412,140 @@ router.post("/google", async (req, res) => {
     usesGoogleAuth: true,
     username: email,
     profilePic: googleResponse.data.picture,
+    emailConfirmed: true,
+    phoneConfirmed: true,
+  });
+
+  // save the user to the database
+  await newUser.save();
+
+  // generate a token
+  const jwtToken = jwt.sign(
+    {
+      id: newUser._id,
+      email: newUser.email,
+    },
+    process.env.JWT_SECRET,
+    {
+      expiresIn: "30d",
+    }
+  );
+
+  // create a referral and set requiresPoints to false
+  const referral = new Referral({
+    user: newUser._id,
+    referralCode: `${newUser.name.split(" ")[0].toUpperCase()}${Math.floor(
+      1000 + Math.random() * 9000
+    )}`,
+    requiresPoints: false,
+    createdAt: new Date().toISOString(),
+  });
+
+  // send the token back
+  res.status(200).json({
+    success: true,
+    data: {
+      token: jwtToken,
+      user: {
+        name: newUser.name,
+        email: newUser.email,
+        profilePic: newUser.profilePic,
+      },
+      isPhoneVerified: newUser.phoneConfirmed,
+    },
+  });
+});
+
+router.post("/google-web", async (req, res) => {
+  // get the token from the request body
+
+  const { token } = req.body;
+
+  // validate token (check if there is a token or if it starts with ya29.)
+  if (!token) {
+    return res.status(400).json({
+      success: false,
+      error: "No token provided",
+    });
+  }
+
+  const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
+
+  let googleResponse;
+
+  try {
+    const ticket = await client.verifyIdToken({
+      idToken: token,
+      audience: process.env.GOOGLE_CLIENT_ID,
+    });
+
+    googleResponse = ticket.getPayload();
+  } catch (err) {
+    console.error("Error verifying token:", err);
+    return res.status(401).json({
+      success: false,
+      error: "Invalid token",
+    });
+  }
+
+  // get the user's email
+  const email = googleResponse?.email;
+
+  // check if the user exists in the database
+  const user = await User.findOne({ email });
+
+  // if the user exists, generate a token and send it back
+  if (user) {
+    const token = jwt.sign(
+      {
+        id: user._id,
+        email: user.email,
+      },
+      process.env.JWT_SECRET,
+      {
+        expiresIn: "30d",
+      }
+    );
+
+    const sendUser = {
+      name: user.name,
+      email: user.email,
+      profilePic: user.profilePic,
+    };
+
+    // update the user to use google auth if it's false
+    if (!user.usesGoogleAuth) {
+      user.usesGoogleAuth = true;
+      if (!user.googleID) {
+        user.googleID = googleResponse.sub;
+      }
+      await user.save();
+    }
+
+    return res.status(200).json({
+      success: true,
+      data: {
+        token,
+        user: sendUser,
+        isPhoneVerified: user.phoneConfirmed,
+      },
+    });
+  }
+
+  // if the user does not exist, create a new user and generate a token
+
+  // get the user's name
+  const name = googleResponse.name;
+
+  // create a new user
+  const newUser = new User({
+    name,
+    email,
+    createdAt: new Date().toISOString(),
+    googleID: googleResponse.sub,
+    usesGoogleAuth: true,
+    username: email,
+    profilePic: googleResponse.picture,
     emailConfirmed: true,
   });
 

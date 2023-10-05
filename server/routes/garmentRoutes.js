@@ -116,9 +116,6 @@ router.post("/add", upload.single("garment-image"), auth, async (req, res) => {
       },
     });
   } catch (err) {
-    console.log("entered catch block");
-    console.log("error", err);
-
     res.status(400).json({
       success: false,
       error: err,
