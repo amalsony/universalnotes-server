@@ -396,7 +396,7 @@ router.post("/google", async (req, res) => {
       data: {
         token,
         user: sendUser,
-        isPhoneVerified: true,
+        isPhoneVerified: isPhoneRequired ? user.phoneConfirmed : true,
       },
     });
   }
@@ -416,6 +416,7 @@ router.post("/google", async (req, res) => {
     username: email,
     profilePic: googleResponse.data.picture,
     emailConfirmed: true,
+    phoneConfirmed: isPhoneRequired ? false : true,
   });
 
   // save the user to the database
@@ -519,7 +520,7 @@ router.post("/google-web", async (req, res) => {
       data: {
         token,
         user: sendUser,
-        isPhoneVerified: user.phoneConfirmed,
+        isPhoneVerified: true,
       },
     });
   }
@@ -685,7 +686,7 @@ router.post("/apple", async (req, res) => {
         data: {
           token,
           user: sendUser,
-          isPhoneVerified: user.phoneConfirmed,
+          isPhoneVerified: isPhoneRequired ? user.phoneConfirmed : true,
         },
       });
     }
@@ -714,6 +715,7 @@ router.post("/apple", async (req, res) => {
         ).fileName
       }`,
       emailConfirmed: true,
+      phoneConfirmed: isPhoneRequired ? false : true,
     });
 
     // save the user to the database
