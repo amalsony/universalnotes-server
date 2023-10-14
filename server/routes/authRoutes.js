@@ -365,6 +365,11 @@ router.post("/google", async (req, res) => {
 
   // if the user exists, generate a token and send it back
   if (user) {
+    if (!user.phoneConfirmed) {
+      user.phoneConfirmed = true;
+      await user.save();
+    }
+
     const token = jwt.sign(
       {
         id: user._id,
@@ -655,6 +660,11 @@ router.post("/apple", async (req, res) => {
 
     // if the user exists, generate a token and send it back
     if (user) {
+      if (!user.phoneConfirmed) {
+        user.phoneConfirmed = true;
+        await user.save();
+      }
+
       const token = jwt.sign(
         {
           id: user._id,
