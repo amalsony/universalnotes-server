@@ -26,6 +26,9 @@ const { country_codes } = require("../config/supportedCountries");
 // ulitilities
 const { defaultProfilePics } = require("../utilities/defaultProfilePics");
 
+// Config
+const isPhoneRequired = false;
+
 router.post("/add-phone", authNoPhone, async (req, res) => {
   const { phone, countryCode, country } = req.body;
 
@@ -440,7 +443,7 @@ router.post("/google", async (req, res) => {
         email: newUser.email,
         profilePic: newUser.profilePic,
       },
-      isPhoneVerified: newUser.phoneConfirmed,
+      isPhoneVerified: isPhoneRequired ? newUser.phoneConfirmed : true,
     },
   });
 });
@@ -738,7 +741,7 @@ router.post("/apple", async (req, res) => {
           email: newUser.email,
           profilePic: newUser.profilePic,
         },
-        isPhoneVerified: newUser.phoneConfirmed,
+        isPhoneVerified: isPhoneRequired ? newUser.phoneConfirmed : true,
       },
     });
   } catch (error) {
