@@ -365,7 +365,7 @@ router.post("/google", async (req, res) => {
 
   // if the user exists, generate a token and send it back
   if (user) {
-    if (!user.phoneConfirmed) {
+    if (!user.phoneConfirmed && isPhoneRequired) {
       user.phoneConfirmed = true;
       await user.save();
     }
@@ -660,7 +660,7 @@ router.post("/apple", async (req, res) => {
 
     // if the user exists, generate a token and send it back
     if (user) {
-      if (!user.phoneConfirmed) {
+      if (!user.phoneConfirmed && isPhoneRequired) {
         user.phoneConfirmed = true;
         await user.save();
       }
