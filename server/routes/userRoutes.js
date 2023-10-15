@@ -29,7 +29,11 @@ router.get("/points", auth, async (req, res) => {
       show = true;
     }
 
-    const showReferralBox = !referral.requiresPoints || referral.points <= 4;
+    let showReferralBox;
+
+    if (referral.requiresPoints === true && referral.points <= 4) {
+      showReferralBox = true;
+    }
 
     res.status(200).json({
       success: true,
