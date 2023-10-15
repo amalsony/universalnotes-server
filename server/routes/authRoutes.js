@@ -427,6 +427,19 @@ router.post("/google", async (req, res) => {
   // save the user to the database
   await newUser.save();
 
+  // create a referral and set requiresPoints to false
+  const referral = new Referral({
+    user: newUser._id,
+    referralCode: `${newUser.name?.split(" ")[0]?.toUpperCase()}${Math.floor(
+      1000 + Math.random() * 9000
+    )}`,
+    requiresPoints: false,
+    points: 40,
+    createdAt: new Date().toISOString(),
+  });
+
+  await referral.save();
+
   // generate a token
   const jwtToken = jwt.sign(
     {
@@ -730,6 +743,19 @@ router.post("/apple", async (req, res) => {
 
     // save the user to the database
     await newUser.save();
+
+    // create a referral and set requiresPoints to false
+    const referral = new Referral({
+      user: newUser._id,
+      referralCode: `${newUser.name?.split(" ")[0]?.toUpperCase()}${Math.floor(
+        1000 + Math.random() * 9000
+      )}`,
+      requiresPoints: false,
+      points: 40,
+      createdAt: new Date().toISOString(),
+    });
+
+    await referral.save();
 
     // generate a token
     const jwtToken = jwt.sign(
