@@ -19,6 +19,8 @@ const twilioClient = require("twilio")(accountSid, authToken);
 // Models
 const User = require("../models/User");
 const Referral = require("../models/Referral");
+const Garment = require("../models/Garment");
+const Outfit = require("../models/Outfit");
 
 // config imports
 const { country_codes } = require("../config/supportedCountries");
@@ -787,6 +789,35 @@ router.post("/apple", async (req, res) => {
     return res.status(500).json({
       success: false,
       error: "Internal server error",
+    });
+  }
+});
+
+router.delete("/delete-account", auth, async (req, res) => {
+  try {
+    // Delete all garments of the user
+    await Garment.deleteMany({ user: req.userId });
+
+    // Delete all referrals of the user
+    await Referral.deleteMany({ user: req.userId });
+
+    // Delete all outfits of the user
+    await Outfit.deleteMany({ user: req.userId });
+
+    // Delete the user object itself
+    await User.findByIdAndDelete(req.userId);
+
+    res.status(200).json({
+      success: true,
+      data: {
+        message: "Account Deleted",
+      },
+    });
+  } catch (err) {
+    console.error(err.message);
+    res.status(500).json({
+      success: false,
+      error: err.message,
     });
   }
 });
