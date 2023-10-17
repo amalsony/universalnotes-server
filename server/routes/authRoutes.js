@@ -29,7 +29,7 @@ const { country_codes } = require("../config/supportedCountries");
 const { defaultProfilePics } = require("../utilities/defaultProfilePics");
 
 // Config
-const isPhoneRequired = false;
+const isPhoneRequired = true;
 
 router.post("/add-phone", authNoPhone, async (req, res) => {
   const { phone, countryCode, country } = req.body;
@@ -435,7 +435,7 @@ router.post("/google", async (req, res) => {
     referralCode: `${newUser.name?.split(" ")[0]?.toUpperCase()}${Math.floor(
       1000 + Math.random() * 9000
     )}`,
-    requiresPoints: false,
+    requiresPoints: true,
     points: 40,
     createdAt: new Date().toISOString(),
   });
@@ -752,7 +752,7 @@ router.post("/apple", async (req, res) => {
       referralCode: `${newUser.name?.split(" ")[0]?.toUpperCase()}${Math.floor(
         1000 + Math.random() * 9000
       )}`,
-      requiresPoints: false,
+      requiresPoints: true,
       points: 40,
       createdAt: new Date().toISOString(),
     });

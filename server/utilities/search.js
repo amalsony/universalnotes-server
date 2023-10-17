@@ -74,7 +74,7 @@ const findMatchingGarments = async (prompt, category, userId) => {
           },
         },
         {
-          $limit: 2,
+          $limit: 4,
         },
         {
           $project: {
