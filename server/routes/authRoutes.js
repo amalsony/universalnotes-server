@@ -29,7 +29,7 @@ const { country_codes } = require("../config/supportedCountries");
 const { defaultProfilePics } = require("../utilities/defaultProfilePics");
 
 // Config
-const isPhoneRequired = true;
+const isPhoneRequired = false;
 
 router.post("/add-phone", authNoPhone, async (req, res) => {
   const { phone, countryCode, country } = req.body;
