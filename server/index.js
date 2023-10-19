@@ -16,12 +16,14 @@ const authRoutes = require("./routes/authRoutes");
 const garmentRoutes = require("./routes/garmentRoutes");
 const outfitRoutes = require("./routes/outfitRoutes");
 const userRoutes = require("./routes/userRoutes");
+const shopRoutes = require("./routes/shopRoutes");
 
 // Use routes
 app.use("/auth", authRoutes); // Auth Routes
 app.use("/garments", garmentRoutes); // Garment Routes
 app.use("/outfits", outfitRoutes); // Outfit Routes
 app.use("/user", userRoutes); // User Routes
+app.use("/shop", shopRoutes); // Shop Routes
 
 app.listen(port, () => {
   console.log(`Server is listening on port ${port}`);

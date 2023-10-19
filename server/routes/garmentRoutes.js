@@ -28,6 +28,7 @@ const { validateGarmentInput } = require("../utilities/validators");
 
 // AI imports
 const createEmbedding = require("../openai/embed");
+const generateShoppingSearchTerms = require("../openai/garmentRecommendation");
 
 // Add garment
 router.post("/add", upload.single("garment-image"), auth, async (req, res) => {

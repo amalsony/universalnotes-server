@@ -3,6 +3,8 @@ const router = express.Router();
 
 // Models
 const Garment = require("../models/Garment");
+const Outfit = require("../models/Outfit");
+const User = require("../models/User");
 
 // AI Imports
 const generateOutfit = require("../openai/generate");
