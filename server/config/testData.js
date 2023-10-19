@@ -1,6 +1,15 @@
 module.exports.testData = [
   {
     _id: "1",
+    name: "Brown Plaid A-Line Skirt",
+    brand: "Hollister Co.",
+    image:
+      "https://img.hollisterco.com/is/image/anf/KIC_343-3101-1874-108_prod1.jpg?policy=product-small",
+    price: "$29.99",
+    link: "https://www.hollisterco.com/shop/us/p/plaid-a-line-skort-52779327",
+  },
+  {
+    _id: "2",
     name: "Green Henley Shirt",
     brand: "JCrew",
     image:
@@ -9,8 +18,8 @@ module.exports.testData = [
     link: "https://factory.jcrew.com/p/mens/categories/clothing/tees/henley-tees/long-sleeve-henley-in-slub-cotton/J8214?color_name=dark-eucalyptus&N=MEDIUM&noPopUp=true&srccode=Paid_Search%7cSearch_Pmax%7cGoogle%7cPX_ACQ_XPROD_SHIRTSXXXXXXX_EVG_ROAS_XXX_COUSA_EN_EN_A_FACT_GO_SH_PMX_xxxxxxxxxx,,,71700000112752265,,&utm_source=google&utm_medium=paid_search&utm_campaign=PX_ACQ_XPROD_SHIRTSXXXXXXX_EVG_ROAS_XXX_COUSA_EN_EN_A_FACT_GO_SH_PMX_xxxxxxxxxx,&utm_content=shopping&NoPopUp=True&gclid=CjwKCAjwp8OpBhAFEiwAG7NaEm8MEouF3lxrKMDokpzo2UyyXEuclZD4HAOXxwd_y05ySER88N_WDBoCNQoQAvD_BwE&gclsrc=aw.ds",
   },
   {
-    _id: "2",
-    name: "Brown Jacket Something Something Something",
+    _id: "3",
+    name: "Brown Jacket",
     brand: "Zara",
     image:
       "https://www.kosha.co/journal/wp-content/uploads/2022/07/winter-jacket-for-men.jpeg",
