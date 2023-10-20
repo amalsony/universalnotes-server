@@ -34,7 +34,7 @@ router.get("/recommend/:id", async (req, res) => {
         },
       });
     } else if (garmentCategory === "bottom") {
-      const recommendations = [testData[2]];
+      const recommendations = [testData[0], testData[1]];
       return res.status(200).json({
         success: true,
         data: {

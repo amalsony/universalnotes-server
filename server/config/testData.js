@@ -1,37 +1,18 @@
 module.exports.testData = [
   {
     _id: "1",
-    name: "Brown Plaid A-Line Skirt",
-    brand: "Hollister Co.",
-    image:
-      "https://img.hollisterco.com/is/image/anf/KIC_343-3101-1874-108_prod1.jpg?policy=product-small",
-    price: "$29.99",
-    link: "https://www.hollisterco.com/shop/us/p/plaid-a-line-skort-52779327",
+    name: "Women's White Cropped Jacket",
+    brand: "Lumister",
+    image: "https://m.media-amazon.com/images/I/71KfJMxv5UL._AC_UX569_.jpg",
+    price: "$36.99",
+    link: "https://www.amazon.com/Lumister-Fashion-Cropped-Lightweight-0605-Beige-M/dp/B0C53QF7ZB?pd_rd_w=hhrA4&content-id=amzn1.sym.225b4624-972d-4629-9040-f1bf9923dd95%3Aamzn1.symc.40e6a10e-cbc4-4fa5-81e3-4435ff64d03b&pf_rd_p=225b4624-972d-4629-9040-f1bf9923dd95&pf_rd_r=TYYWM4XMYXX8YS0V3C1X&pd_rd_wg=sk8F9&pd_rd_r=06765920-52ba-4f53-88da-3ae9e235b529&pd_rd_i=B0C53QF7ZB&linkCode=li2&tag=wardrobeai-20&linkId=b2299abb4ac50db51977216a84307193&language=en_US&ref_=as_li_ss_il",
   },
   {
     _id: "2",
-    name: "Green Henley Shirt",
-    brand: "JCrew",
-    image:
-      "https://www.jcrew.com/s7-img-facade/J8214_GR5818_m?hei=975&crop=0,0,780,0",
-    price: "$50",
-    link: "https://factory.jcrew.com/p/mens/categories/clothing/tees/henley-tees/long-sleeve-henley-in-slub-cotton/J8214?color_name=dark-eucalyptus&N=MEDIUM&noPopUp=true&srccode=Paid_Search%7cSearch_Pmax%7cGoogle%7cPX_ACQ_XPROD_SHIRTSXXXXXXX_EVG_ROAS_XXX_COUSA_EN_EN_A_FACT_GO_SH_PMX_xxxxxxxxxx,,,71700000112752265,,&utm_source=google&utm_medium=paid_search&utm_campaign=PX_ACQ_XPROD_SHIRTSXXXXXXX_EVG_ROAS_XXX_COUSA_EN_EN_A_FACT_GO_SH_PMX_xxxxxxxxxx,&utm_content=shopping&NoPopUp=True&gclid=CjwKCAjwp8OpBhAFEiwAG7NaEm8MEouF3lxrKMDokpzo2UyyXEuclZD4HAOXxwd_y05ySER88N_WDBoCNQoQAvD_BwE&gclsrc=aw.ds",
-  },
-  {
-    _id: "3",
-    name: "Brown Jacket",
-    brand: "Zara",
-    image:
-      "https://www.kosha.co/journal/wp-content/uploads/2022/07/winter-jacket-for-men.jpeg",
-    price: "$29",
-    link: "https://www.zara.com/us/en/oversized-sweater-p06893308.html?v1=89170479&v2=1718129",
-  },
-  {
-    _id: "3",
-    name: "Sweater",
-    brand: "Zara",
-    image: "https://www.gap.com/webcontent/0053/682/159/cn53682159.jpg",
-    price: "$42",
-    link: "https://www.zara.com/us/en/oversized-sweater-p06893308.html?v1=89170479&v2=1718129",
+    name: "Lightweight Water-Resistant Puffer Jacket",
+    brand: "Amazon Essentials",
+    image: "https://m.media-amazon.com/images/I/81iTsybaiyL._AC_UX569_.jpg",
+    price: "$31.92",
+    link: "https://amzn.to/3M7Z1Mf",
   },
 ];
