@@ -26,26 +26,36 @@ router.get("/recommend/:id", async (req, res) => {
     const garmentCategory = databaseGarment.category;
 
     if (garmentCategory === "top") {
-      const recommendations = [testData[0], testData[1]];
-      return res.status(200).json({
-        success: true,
-        data: {
-          recommendations,
-        },
+      // const recommendations = [testData[0], testData[1]];
+      // return res.status(200).json({
+      //   success: true,
+      //   data: {
+      //     recommendations,
+      //   },
+      // });
+      // shopping is coming soon
+      return res.status(400).json({
+        success: false,
+        error: "The shopping experience is coming out this Saturday!",
       });
     } else if (garmentCategory === "bottom") {
-      const recommendations = [testData[0], testData[1]];
-      return res.status(200).json({
-        success: true,
-        data: {
-          recommendations,
-        },
+      // const recommendations = [testData[0], testData[1]];
+      // return res.status(200).json({
+      //   success: true,
+      //   data: {
+      //     recommendations,
+      //   },
+      // });
+      // shopping is coming soon
+      return res.status(400).json({
+        success: false,
+        error: "The shopping experience is coming out this Saturday!",
       });
     } else {
       // shopping is currently only supported for tops and bottoms
       return res.status(400).json({
         success: false,
-        error: "Shopping is currently only supported for tops and bottoms",
+        error: "The shopping experience is coming out this Saturday!",
       });
     }
 
