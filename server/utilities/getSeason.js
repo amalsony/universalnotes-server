@@ -1,4 +1,4 @@
-export default function getSeason() {
+function getSeason() {
   const month = new Date().getMonth();
   if (month >= 2 && month <= 4) {
     return "spring";
@@ -10,3 +10,5 @@ export default function getSeason() {
     return "winter";
   }
 }
+
+module.exports = getSeason;

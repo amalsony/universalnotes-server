@@ -1,6 +1,7 @@
 // Models
 const Garment = require("../models/Garment");
 const Mongoose = require("mongoose");
+const getSeason = require("./getSeason");
 
 // Embeddings
 const createEmbedding = require("../openai/embed");
@@ -35,8 +36,12 @@ const findMatchingGarments = async (prompt, category, userId) => {
   // create an objectId from the user string
   const user = new Mongoose.Types.ObjectId(userId);
 
+  // the prompt is something like "I want to wear a top that is blue and has a collar". Add a question and the current season to the end like this "I want to wear a top that is blue and has a collar What should I wear? The current season is [season]."
+  const season = getSeason();
+  const searchPrompt = `${prompt} What should I wear? The current season is ${season}.`;
+
   // create embedding for prompt
-  const embedding = await createEmbedding(prompt);
+  const embedding = await createEmbedding(searchPrompt);
 
   const collection = Garment.collection;
 
