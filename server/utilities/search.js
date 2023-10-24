@@ -38,7 +38,12 @@ const findMatchingGarments = async (prompt, category, userId) => {
 
   // the prompt is something like "I want to wear a top that is blue and has a collar". Add a question and the current season to the end like this "I want to wear a top that is blue and has a collar What should I wear? The current season is [season]."
   const season = getSeason();
-  const searchPrompt = `${prompt} What should I wear? The current season is ${season}.`;
+  let searchPrompt;
+  if (typeof season === "string") {
+    searchPrompt = `${prompt} What should I wear? The current season is ${season}.`;
+  } else {
+    searchPrompt = `${prompt} What should I wear?`;
+  }
 
   // create embedding for prompt
   const embedding = await createEmbedding(searchPrompt);
