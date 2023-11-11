@@ -150,7 +150,7 @@ function searchAmazon(keywords) {
   searchItemsRequest["PartnerType"] = "Associates";
   searchItemsRequest["Keywords"] = keywords;
   searchItemsRequest["SearchIndex"] = "Fashion";
-  searchItemsRequest["ItemCount"] = 2;
+  searchItemsRequest["ItemCount"] = 4;
   searchItemsRequest["Resources"] = [
     "Images.Primary.Medium",
     "ItemInfo.Title",
