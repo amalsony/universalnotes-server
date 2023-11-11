@@ -52,6 +52,12 @@ const UserSchema = new Schema({
   birthday: {
     type: String,
   },
+  gender: {
+    type: String,
+  },
+  predictedGender: {
+    type: String,
+  },
   password: {
     type: String,
   },

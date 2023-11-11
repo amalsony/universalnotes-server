@@ -11,7 +11,7 @@ If the garment is a bottom, suggest a top.
 
 Unless the input garment is from a very luxurious brand, don’t suggest very expensive clothes. You can go lower than the brand luxury level of the input garment, but not higher.
 
-Include a gender in the output as shown in the example based on the input garment.
+Include a gender in the output as shown in the example based on the predicted gender of the user but you can also infer based on the input garment to make a better guess. 
 
 Examples:
 

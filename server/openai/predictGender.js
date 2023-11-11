@@ -11,12 +11,11 @@ Your output must be in this exact JSON format:
 {"gender": "male"} or {"gender": "female"}
 `;
 
-const generateShoppingSearchTerms = async (garment) => {
-  console.log("garment", garment);
+const predictGender = async (garments) => {
   const gptResponse = await openai.chat.completions.create({
     messages: [
       { role: "system", content: systemString },
-      { role: "user", content: garment },
+      { role: "user", content: garments },
     ],
     // model: "gpt-4",
     // model: "gpt-3.5-turbo-0613",
@@ -37,4 +36,4 @@ const generateShoppingSearchTerms = async (garment) => {
   return gptResponse.choices[0].message.content;
 };
 
-module.exports = generateShoppingSearchTerms;
+module.exports = predictGender;
