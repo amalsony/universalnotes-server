@@ -60,7 +60,7 @@ router.get("/get-note", async (req, res) => {
   const url = req.query.url; // Access the URL parameter
 
   try {
-    // find the latest note with the url
+    // find the latest note with the given URL
     const note = await Note.findOne({ "url.full_url": url }).sort({
       createdAt: -1,
     });
