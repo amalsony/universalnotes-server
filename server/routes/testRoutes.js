@@ -429,4 +429,28 @@ router.post("/api/get-example-processing", async (req, res) => {
   }
 });
 
+// /email-list which creates a json for all the users in the database with their email and name
+router.get("/email-list", async (req, res) => {
+  try {
+    const users = await User.find({});
+
+    const emailList = users.map((user) => {
+      return {
+        email: user.email,
+        name: user.name,
+      };
+    });
+
+    res.status(200).json({
+      success: true,
+      data: emailList,
+    });
+  } catch (err) {
+    res.status(400).json({
+      success: false,
+      error: err,
+    });
+  }
+});
+
 module.exports = router;

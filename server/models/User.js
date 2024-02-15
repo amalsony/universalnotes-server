@@ -17,6 +17,10 @@ const UserSchema = new Schema({
     index: true,
     required: true,
     unique: true,
+    match: [
+      /^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/,
+      "Please add a valid email",
+    ],
   },
   emailConfirmed: {
     type: Boolean,
@@ -49,13 +53,7 @@ const UserSchema = new Schema({
     required: true,
     index: true,
   },
-  birthday: {
-    type: String,
-  },
-  gender: {
-    type: String,
-  },
-  predictedGender: {
+  dateOfBirth: {
     type: String,
   },
   password: {
@@ -75,6 +73,14 @@ const UserSchema = new Schema({
     type: Boolean,
     default: false,
   },
+  accessToken: {
+    type: String,
+  },
+  refreshToken: {
+    type: String,
+  },
+  resetPasswordToken: String,
+  resetPasswordExpire: Date,
 });
 
 module.exports = mongoose.model("User", UserSchema);

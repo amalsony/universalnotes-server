@@ -3,6 +3,7 @@ const router = express.Router();
 
 // auth imports
 const jwt = require("jsonwebtoken");
+const passport = require("passport");
 const axios = require("axios");
 const auth = require("../middleware/auth");
 const authNoPhone = require("../middleware/authNoPhone");
@@ -18,324 +19,41 @@ const twilioClient = require("twilio")(accountSid, authToken);
 
 // Models
 const User = require("../models/User");
-const Referral = require("../models/Referral");
-const Garment = require("../models/Garment");
-const Outfit = require("../models/Outfit");
+const Note = require("../models/Note");
 
 // config imports
 const { country_codes } = require("../config/supportedCountries");
 
 // ulitilities
 const { defaultProfilePics } = require("../utilities/defaultProfilePics");
+require("../services/Passport");
 
 // Config
-const isPhoneRequired = false;
+const isPhoneRequired = process.env.PHONE_REQUIRED === "true";
 
-router.post("/add-phone", authNoPhone, async (req, res) => {
-  const { phone, countryCode, country } = req.body;
+router.get(
+  "/google",
+  passport.authenticate("google", { scope: ["profile", "email"] })
+);
+router.get(
+  "/google/callback",
+  passport.authenticate("google", {
+    successRedirect: "http://localhost:3000/login-success",
+  })
+);
 
-  // check if the user exists
-  const user = await User.findById(req.userId);
+router.get("/me", async (req, res) => {
+  res.send(req.user);
+});
 
-  if (!user) {
-    return res.status(400).json({
-      success: false,
-      error: "You're not logged in",
-    });
-  }
-
-  if (phone === "1234567890") {
-    // update the user's phone number
-    user.pendingPhoneNumber = `${countryCode}${phone}`;
-    user.country = country;
-    await user.save();
-
-    return res.status(200).json({
-      success: true,
-      data: {
-        verification: {
-          status: "pending",
-          to: `${countryCode}${phone}`,
-        },
-      },
-    });
-  }
-
-  // check if phone number is already in use
-  const checkPhoneUser = await User.findOne({
-    phone: `${countryCode}${phone}`,
+router.post("/logout", (req, res) => {
+  req.logout();
+  res.status(200).json({
+    message: "Logged out",
   });
-  if (
-    checkPhoneUser &&
-    checkPhoneUser._id !== user._id &&
-    checkPhoneUser.phoneConfirmed
-  ) {
-    return res.status(400).json({
-      success: false,
-      error: "Phone number already in use",
-    });
-  }
-
-  // check if the user has already verified their phone number
-  if (user.phoneConfirmed) {
-    return res.status(400).json({
-      success: false,
-      error: "Phone number already verified",
-    });
-  }
-
-  // validate phone number
-  if (!phone) {
-    return res.status(400).json({
-      success: false,
-      error: "Please provide a phone number",
-    });
-  }
-
-  // validate country code
-  if (!countryCode) {
-    return res.status(400).json({
-      success: false,
-      error: "Please provide a country code",
-    });
-  }
-
-  // validate country
-  if (!country) {
-    return res.status(400).json({
-      success: false,
-      error: "Please provide a country",
-    });
-  }
-
-  // check if the country code is supported
-  if (!country_codes.includes(country)) {
-    return res.status(400).json({
-      success: false,
-      error: "Unsupported country",
-    });
-  }
-
-  // send the verification code
-  try {
-    const verificationRequest = await twilioClient.verify.v2
-      .services(twilioVerifyServiceSid)
-      .verifications.create({
-        to: `${countryCode}${phone}`,
-        channel: "sms", // You can also use "call" for voice-based verification
-      });
-
-    if (verificationRequest.status === "pending") {
-      // update the user's phone number
-      user.pendingPhoneNumber = `${countryCode}${phone}`;
-      user.country = country;
-      await user.save();
-    }
-
-    res.status(200).json({
-      success: true,
-      data: {
-        verification: {
-          status: verificationRequest.status,
-          phone: verificationRequest.to,
-        },
-      },
-    });
-  } catch (error) {
-    if (error.message.startsWith("Invalid parameter `To`")) {
-      return res.status(400).json({
-        success: false,
-        error: "Invalid phone number",
-      });
-    }
-
-    res.status(400).json({
-      success: false,
-      error: "Something went wrong",
-    });
-  }
 });
 
-router.post("/verify-phone", authNoPhone, async (req, res) => {
-  const { phone, code } = req.body;
-
-  // check if the user exists
-  const user = await User.findById(req.userId);
-
-  if (!user) {
-    return res.status(400).json({
-      success: false,
-      error: "You're not logged in",
-    });
-  }
-
-  if (phone === "+11234567890") {
-    // update the user's phone number
-    user.phoneConfirmed = true;
-    user.phone = user.pendingPhoneNumber;
-    user.pendingPhoneNumber = null;
-    await user.save();
-
-    // create the referral code for the user, it's their first name + 4 random digits (e.g. CHLOE0504)
-    let max = 9999;
-
-    function createReferralCode(firstName) {
-      const referralCode = `${firstName.toUpperCase()}${Math.floor(
-        1000 + Math.random() * 9000
-      )}`;
-
-      const referral = Referral.findOne({ referralCode: referralCode });
-
-      if (max === 0) {
-        return Math.floor(10000 + Math.random() * 90000);
-      }
-
-      if (
-        referral &&
-        referral.user &&
-        referral.user.toString() !== user._id.toString()
-      ) {
-        max--;
-        return createReferralCode(firstName);
-      }
-
-      return referralCode;
-    }
-
-    const referralCode = createReferralCode(user.name.split(" ")[0]);
-
-    // create a new referral
-    const referral = new Referral({
-      user: user._id,
-      referralCode: referralCode,
-      requiresPoints: true,
-      points: 40,
-      createdAt: new Date().toISOString(),
-    });
-
-    await referral.save();
-
-    return res.status(200).json({
-      success: true,
-      data: {
-        verification: {
-          status: "approved",
-          to: `${phone}`,
-        },
-      },
-    });
-  }
-
-  // check if the user has already verified their phone number
-  if (user.phoneConfirmed) {
-    return res.status(400).json({
-      success: false,
-      error: "Phone number already verified",
-    });
-  }
-
-  // validate phone number
-  if (!phone) {
-    return res.status(400).json({
-      success: false,
-      error: "Please provide a phone number",
-    });
-  }
-
-  // check if the phone number is the same as the one in the database
-  if (phone !== user.pendingPhoneNumber) {
-    return res.status(400).json({
-      success: false,
-      error: "Invalid phone number",
-    });
-  }
-
-  // validate code
-  if (!code) {
-    return res.status(400).json({
-      success: false,
-      error: "Please provide a code",
-    });
-  }
-
-  try {
-    const verification = await twilioClient.verify.v2
-      .services(twilioVerifyServiceSid)
-      .verificationChecks.create({
-        to: phone,
-        code,
-      });
-
-    // check if the verification was successful
-    if (verification.status === "approved") {
-      // update the user's phone number
-      user.phoneConfirmed = true;
-      user.phone = user.pendingPhoneNumber;
-      user.pendingPhoneNumber = null;
-      await user.save();
-
-      // create the referral code for the user, it's their first name + 4 random digits (e.g. CHLOE0504)
-      let max = 9999;
-
-      function createReferralCode(firstName) {
-        const referralCode = `${firstName.toUpperCase()}${Math.floor(
-          1000 + Math.random() * 9000
-        )}`;
-
-        const referral = Referral.findOne({ referralCode: referralCode });
-
-        if (max === 0) {
-          return Math.floor(10000 + Math.random() * 90000);
-        }
-
-        if (
-          referral &&
-          referral.user &&
-          referral.user.toString() !== user._id.toString()
-        ) {
-          max--;
-          return createReferralCode(firstName);
-        }
-
-        return referralCode;
-      }
-
-      const referralCode = createReferralCode(user.name.split(" ")[0]);
-
-      // create a new referral
-      const referral = new Referral({
-        user: user._id,
-        referralCode: referralCode,
-        requiresPoints: true,
-        points: 40,
-        createdAt: new Date().toISOString(),
-      });
-
-      await referral.save();
-
-      res.status(200).json({
-        success: true,
-        data: {
-          verification,
-        },
-      });
-    } else {
-      res.status(400).json({
-        success: false,
-        error: "Invalid code",
-      });
-    }
-  } catch (error) {
-    console.log("entered catch block");
-    console.log(error);
-    res.status(400).json({
-      success: false,
-      error: error.message,
-    });
-  }
-});
-
-router.post("/google", async (req, res) => {
+router.post("/google-prev", async (req, res) => {
   // get the token from the request body
 
   const { token } = req.body;
@@ -379,7 +97,7 @@ router.post("/google", async (req, res) => {
       },
       process.env.JWT_SECRET,
       {
-        expiresIn: "30d",
+        expiresIn: "90d",
       }
     );
 
@@ -450,7 +168,7 @@ router.post("/google", async (req, res) => {
     },
     process.env.JWT_SECRET,
     {
-      expiresIn: "30d",
+      expiresIn: "90d",
     }
   );
 
@@ -474,7 +192,7 @@ router.post("/google-web", async (req, res) => {
 
   const { token } = req.body;
 
-  // validate token (check if there is a token or if it starts with ya29.)
+  // validate token
   if (!token) {
     return res.status(400).json({
       success: false,
@@ -516,7 +234,7 @@ router.post("/google-web", async (req, res) => {
       },
       process.env.JWT_SECRET,
       {
-        expiresIn: "30d",
+        expiresIn: "90d",
       }
     );
 
@@ -574,7 +292,7 @@ router.post("/google-web", async (req, res) => {
     },
     process.env.JWT_SECRET,
     {
-      expiresIn: "30d",
+      expiresIn: "90d",
     }
   );
 
@@ -687,7 +405,7 @@ router.post("/apple", async (req, res) => {
         },
         process.env.JWT_SECRET,
         {
-          expiresIn: "30d",
+          expiresIn: "90d",
         }
       );
 
@@ -767,7 +485,7 @@ router.post("/apple", async (req, res) => {
       },
       process.env.JWT_SECRET,
       {
-        expiresIn: "30d",
+        expiresIn: "90d",
       }
     );
 
@@ -795,14 +513,8 @@ router.post("/apple", async (req, res) => {
 
 router.delete("/delete-account", auth, async (req, res) => {
   try {
-    // Delete all garments of the user
-    await Garment.deleteMany({ user: req.userId });
-
-    // Delete all referrals of the user
-    await Referral.deleteMany({ user: req.userId });
-
-    // Delete all outfits of the user
-    await Outfit.deleteMany({ user: req.userId });
+    // Delete all notes of the user
+    await Note.deleteMany({ user: req.userId });
 
     // Delete the user object itself
     await User.findByIdAndDelete(req.userId);

@@ -22,7 +22,7 @@ const authNoPhone = async (req, res, next) => {
   } catch (error) {
     res.status(400).json({
       success: false,
-      error: "Invalid token",
+      error: "Your session has expired. Please log out and log in again.",
     });
   }
 };

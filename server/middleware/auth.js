@@ -33,7 +33,7 @@ const auth = async (req, res, next) => {
     console.log(error);
     res.status(400).json({
       success: false,
-      error: "Invalid token",
+      error: "Your session has expired. Please log out and log in again.",
     });
   }
 };
