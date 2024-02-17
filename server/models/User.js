@@ -79,6 +79,20 @@ const UserSchema = new Schema({
   refreshToken: {
     type: String,
   },
+  hidden_notes: [
+    {
+      type: Schema.Types.ObjectId,
+      ref: "Note",
+    },
+  ],
+  hasAccess: {
+    type: Boolean,
+    default: false,
+  },
+  referredBy: {
+    type: Schema.Types.ObjectId,
+    ref: "User",
+  },
   resetPasswordToken: String,
   resetPasswordExpire: Date,
 });
