@@ -24,8 +24,8 @@ router.get(
   passport.authenticate("google", {
     successRedirect: `${
       process.env.NODE_ENV === "development"
-        ? process.env.DEVELOPMENT_API_URL
-        : process.env.PRODUCTION_API_URL
+        ? process.env.DEVELOPMENT_CLIENT_URL
+        : process.env.PRODUCTION_CLIENT_URL
     }/login-success`,
   })
 );
