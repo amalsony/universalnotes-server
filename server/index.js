@@ -6,7 +6,12 @@ const connectDB = require("./config/db");
 const port = process.env.PORT || 8000;
 
 const app = express();
-app.use(cors());
+app.use(
+  cors({
+    origin: process.env.PRODUCTION_CLIENT_URL,
+    credentials: true,
+  })
+);
 
 // Connect to MongoDB
 connectDB();
