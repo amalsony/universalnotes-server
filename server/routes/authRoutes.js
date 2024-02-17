@@ -101,7 +101,7 @@ router.post("/add-access-code", isPassportAuth, async (req, res) => {
 router.get("/access-code-required", async (req, res) => {
   return res.status(200).json({
     success: true,
-    data: true,
+    data: false,
   });
 });
 
