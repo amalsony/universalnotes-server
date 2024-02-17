@@ -22,7 +22,11 @@ router.get(
 router.get(
   "/google/callback",
   passport.authenticate("google", {
-    successRedirect: "http://localhost:3000/login-success",
+    successRedirect: `${
+      process.env.NODE_ENV === "development"
+        ? process.env.DEVELOPMENT_API_URL
+        : process.env.PRODUCTION_API_URL
+    }/login-success`,
   })
 );
 
