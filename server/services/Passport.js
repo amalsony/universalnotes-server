@@ -56,6 +56,7 @@ passport.use(
         usesGoogleAuth: true,
         emailConfirmed: profile.emails[0].verified,
         createdAt: new Date().toISOString(),
+        hasAccess: process.env.ACCESS_CODE_REQUIRED === "true" ? false : true,
       }).save();
 
       // Create 4 access codes for the user
