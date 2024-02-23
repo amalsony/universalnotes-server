@@ -8,11 +8,10 @@ const port = process.env.PORT || 8000;
 const app = express();
 app.use(
   cors({
-    // origin:
-    //   process.env.NODE_ENV === "development"
-    //     ? process.env.DEVELOPMENT_CLIENT_URL
-    //     : process.env.PRODUCTION_CLIENT_URL,
-    origin: "https://www.google.com",
+    origin:
+      process.env.NODE_ENV === "development"
+        ? process.env.DEVELOPMENT_CLIENT_URL
+        : process.env.PRODUCTION_CLIENT_URL,
     credentials: true,
   })
 );
