@@ -12,11 +12,13 @@ const AccessCodeSchema = new Schema({
     required: true,
     default: false,
   },
-  referee: {
-    type: Schema.Types.ObjectId,
-    ref: "User",
-    index: true,
-  },
+  referee: [
+    {
+      type: Schema.Types.ObjectId,
+      ref: "User",
+      index: true,
+    },
+  ],
   isSingleUse: {
     type: Boolean,
     default: true,

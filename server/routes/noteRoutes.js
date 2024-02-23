@@ -6,9 +6,13 @@ const upload = multer();
 // Models
 const Note = require("../models/Note");
 const User = require("../models/User");
+const Hidden = require("../models/Hidden");
+const Like = require("../models/Like");
+const Dislike = require("../models/Dislike");
 
 // Middleware
 const isPassportAuth = require("../middleware/passportAuth");
+const isAccessCodeOptionalPassportAuth = require("../middleware/accessCodeOptionalPassportAuth");
 
 // Utilities
 const {
@@ -22,24 +26,6 @@ const blockedPages = require("../utilities/blockedPages");
 
 router.post("/add-note", upload.none(), isPassportAuth, async (req, res) => {
   const { body, url: requestURL } = req.body;
-
-  // let urlDomain = url
-  //   .replace(/(https?:\/\/)?(www.)?/i, "")
-  //   .split("/")[0]
-  //   .split("#")[0]
-  //   .split("?")[0]
-  //   .split(":")[0]
-  //   .toLowerCase();
-
-  // let urlPath = `/${
-  //   url
-  //     .replace(/(https?:\/\/)?(www.)?/i, "")
-  //     .split("/")
-  //     .slice(1)
-  //     .join("/")
-  //     .split("#")[0]
-  //     .split("?")[0]
-  // }`;
 
   const url = getCleanURL(requestURL);
   const urlDomain = getURLDomain(requestURL);
@@ -58,8 +44,6 @@ router.post("/add-note", upload.none(), isPassportAuth, async (req, res) => {
     });
 
     const savedNote = await newNote.save();
-
-    console.log("savedNote", savedNote);
 
     return res.status(200).json({
       message: "Note saved successfully!",
@@ -124,21 +108,35 @@ router.get("/get-note", async (req, res) => {
       createdAt: -1,
     });
 
+    // check if there is a Hidden with the note id and the user id
+    const hidden = await Hidden.findOne({
+      note: note?._id,
+      user: req.user?.id,
+    });
+
+    const DBLike = await Like.findOne({
+      note: note?._id,
+      user: req.user?.id,
+    });
+
+    const DBDislike = await Dislike.findOne({
+      note: note?._id,
+      user: req.user?.id,
+    });
+
     // if the note exists, return the note
-    if (note) {
+    if (note && !hidden) {
       return res.status(200).json({
         success: true,
-        showPopup: req.user?.id
-          ? !req.user?.hidden_notes.includes(note._id)
-          : true,
+        showPopup: true,
         message: {
           _id: note._id,
           body: note.body,
           like_count: note.like_count,
           dislike_count: note.dislike_count,
           createdAt: note.createdAt,
-          isLiked: note.likes.includes(req.user?.id),
-          isDisliked: note.dislikes.includes(req.user?.id),
+          isLiked: DBLike ? true : false,
+          isDisliked: DBDislike ? true : false,
           isPostedBySelf: req.user?.id === note.user.toString(),
         },
       });
@@ -158,7 +156,7 @@ router.get("/get-note", async (req, res) => {
 });
 
 // Show note i.e. get note by id
-router.get("/show-note", isPassportAuth, async (req, res) => {
+router.get("/show-note", isAccessCodeOptionalPassportAuth, async (req, res) => {
   const noteId = req.query.noteId;
 
   try {
@@ -171,6 +169,16 @@ router.get("/show-note", isPassportAuth, async (req, res) => {
       });
     }
 
+    const DBLike = await Like.findOne({
+      note: noteId,
+      user: req.user?.id,
+    });
+
+    const DBDislike = await Dislike.findOne({
+      note: noteId,
+      user: req.user?.id,
+    });
+
     return res.status(200).json({
       success: true,
       note: {
@@ -178,8 +186,8 @@ router.get("/show-note", isPassportAuth, async (req, res) => {
         likes: null,
         dislikes: null,
         user: null,
-        isLiked: note.likes.includes(req.user?.id),
-        isDisliked: note.dislikes.includes(req.user?.id),
+        isLiked: DBLike ? true : false,
+        isDisliked: DBDislike ? true : false,
         isPostedBySelf: req.user?.id === note.user.toString(),
       },
     });
@@ -197,11 +205,7 @@ router.post("/hide-note", isPassportAuth, async (req, res) => {
   const noteId = req.body.noteId;
 
   try {
-    const user = await User.findByIdAndUpdate(
-      req.user?.id,
-      { $addToSet: { hidden_notes: noteId } },
-      { new: true }
-    );
+    const user = await User.findById(req.user?.id);
 
     if (!user) {
       return res.status(404).json({
@@ -209,6 +213,14 @@ router.post("/hide-note", isPassportAuth, async (req, res) => {
         message: "User not found",
       });
     }
+
+    const hidden = new Hidden({
+      user: req.user?.id,
+      note: noteId,
+      createdAt: new Date().toISOString(),
+    });
+
+    await hidden.save();
 
     return res.status(200).json({
       success: true,
@@ -237,7 +249,12 @@ router.post("/like", isPassportAuth, async (req, res) => {
     }
 
     // Check if the user has already liked the note
-    if (note.likes.includes(req.user?.id)) {
+    const DBLike = await Like.findOne({
+      note: noteId,
+      user: req.user?.id,
+    });
+
+    if (DBLike) {
       return res.status(400).json({
         success: false,
         message: "You have already liked this note",
@@ -245,15 +262,24 @@ router.post("/like", isPassportAuth, async (req, res) => {
     }
 
     // Check if the user has disliked the note
-    if (note.dislikes.includes(req.user?.id)) {
-      note.dislikes = note.dislikes.filter(
-        (dislike) => dislike.toString() !== req.user?.id
-      );
+    const DBDislike = await Dislike.findOne({
+      note: noteId,
+      user: req.user?.id,
+    });
+
+    if (DBDislike) {
+      await Dislike.deleteOne({ _id: DBDislike._id });
+      note.dislike_count = note.dislike_count - 1;
     }
 
-    note.likes.push(req.user?.id);
-    note.like_count = note.likes.length;
-    note.dislike_count = note.dislikes.length;
+    note.like_count = note.like_count + 1;
+
+    const like = new Like({
+      user: req.user?.id,
+      note: noteId,
+      createdAt: new Date().toISOString(),
+    });
+    await like.save();
 
     const updatedNote = await note.save();
 
@@ -293,16 +319,20 @@ router.post("/unlike", isPassportAuth, async (req, res) => {
     }
 
     // Check if the user has already liked the note
-    if (!note.likes.includes(req.user?.id)) {
+    const DBLike = await Like.findOne({
+      note: noteId,
+      user: req.user?.id,
+    });
+
+    if (!DBLike) {
       return res.status(400).json({
         success: false,
         message: "You have not liked this note",
       });
     }
 
-    note.likes = note.likes.filter((like) => like.toString() !== req.user?.id);
-    note.like_count = note.likes.length;
-    note.dislike_count = note.dislikes.length;
+    await Like.deleteOne({ _id: DBLike._id });
+    note.like_count = note.like_count - 1;
 
     const updatedNote = await note.save();
 
@@ -342,7 +372,12 @@ router.post("/dislike", isPassportAuth, async (req, res) => {
     }
 
     // Check if the user has already disliked the note
-    if (note.dislikes.includes(req.user?.id)) {
+    const DBDislike = await Dislike.findOne({
+      note: noteId,
+      user: req.user?.id,
+    });
+
+    if (DBDislike) {
       return res.status(400).json({
         success: false,
         message: "You have already disliked this note",
@@ -350,17 +385,28 @@ router.post("/dislike", isPassportAuth, async (req, res) => {
     }
 
     // Check if the user has liked the note
-    if (note.likes.includes(req.user?.id)) {
-      note.likes = note.likes.filter(
-        (like) => like.toString() !== req.user?.id
-      );
+    const DBLike = await Like.findOne({
+      note: noteId,
+      user: req.user?.id,
+    });
+
+    if (DBLike) {
+      await Like.deleteOne({ _id: DBLike._id });
+      note.like_count = note.like_count - 1;
     }
 
-    note.dislikes.push(req.user?.id);
-    note.like_count = note.likes.length;
-    note.dislike_count = note.dislikes.length;
+    note.dislike_count = note.dislike_count + 1;
+
+    const dislike = new Dislike({
+      user: req.user?.id,
+      note: noteId,
+      createdAt: new Date().toISOString(),
+    });
+    await dislike.save();
 
     const updatedNote = await note.save();
+
+    console.log("passed");
 
     return res.status(200).json({
       success: true,
@@ -398,18 +444,20 @@ router.post("/undislike", isPassportAuth, async (req, res) => {
     }
 
     // Check if the user has already disliked the note
-    if (!note.dislikes.includes(req.user?.id)) {
+    const DBDislike = await Dislike.findOne({
+      note: noteId,
+      user: req.user?.id,
+    });
+
+    if (!DBDislike) {
       return res.status(400).json({
         success: false,
         message: "You have not disliked this note",
       });
     }
 
-    note.dislikes = note.dislikes.filter(
-      (dislike) => dislike.toString() !== req.user?.id
-    );
-    note.like_count = note.likes.length;
-    note.dislike_count = note.dislikes.length;
+    await Dislike.deleteOne({ _id: DBDislike._id });
+    note.dislike_count = note.dislike_count - 1;
 
     const updatedNote = await note.save();
 
@@ -425,6 +473,49 @@ router.post("/undislike", isPassportAuth, async (req, res) => {
         isDisliked: false,
         isPostedBySelf: req.user?.id === note.user.toString(),
       },
+    });
+  } catch (error) {
+    return res.status(500).json({
+      success: false,
+      error: error.message,
+    });
+  }
+});
+
+// Delete a note
+router.post("/delete-note", isPassportAuth, async (req, res) => {
+  const noteId = req.body.noteId;
+
+  try {
+    const note = await Note.findById(noteId);
+
+    if (!note) {
+      return res.status(404).json({
+        success: false,
+        message: "Note not found",
+      });
+    }
+
+    if (req.user?.id !== note.user.toString()) {
+      return res.status(401).json({
+        success: false,
+        message: "You are not authorized to delete this note",
+      });
+    }
+
+    // Delete the note
+    await Note.deleteOne({ _id: note._id });
+
+    // Delete the likes and dislikes associated with the note
+    await Like.deleteMany({ note: note._id });
+    await Dislike.deleteMany({ note: note._id });
+
+    // Delete any hiddens associated with the note
+    await Hidden.deleteMany({ note: note._id });
+
+    return res.status(200).json({
+      success: true,
+      message: "Note deleted successfully",
     });
   } catch (error) {
     return res.status(500).json({

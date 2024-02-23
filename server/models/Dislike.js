@@ -1,7 +1,7 @@
 const mongoose = require("mongoose");
 const { Schema } = mongoose;
 
-const HiddenSchema = new Schema({
+const DislikeSchema = new Schema({
   user: {
     type: Schema.Types.ObjectId,
     ref: "User",
@@ -21,4 +21,4 @@ const HiddenSchema = new Schema({
   },
 });
 
-module.exports = mongoose.model("Hidden", HiddenSchema);
+module.exports = mongoose.model("Dislike", DislikeSchema);

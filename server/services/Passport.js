@@ -1,6 +1,11 @@
 const passport = require("passport");
 const GoogleStrategy = require("passport-google-oauth20");
+
+// Models
 const User = require("../models/User");
+
+// Utilities
+const { createAccessCode } = require("../utilities/createAccessCode");
 
 passport.serializeUser((user, done) => {
   done(null, user.id);
@@ -53,6 +58,11 @@ passport.use(
         createdAt: new Date().toISOString(),
       }).save();
 
+      // Create 4 access codes for the user
+
+      for (let i = 0; i < 4; i++) {
+        await createAccessCode(user._id, true);
+      }
       done(null, user);
     }
   )

@@ -45,9 +45,23 @@ router.get("/me", async (req, res) => {
   );
 });
 
-router.post("/add-access-code", isPassportAuth, async (req, res) => {
+router.post("/add-access-code", async (req, res) => {
   try {
+    if (!req.isAuthenticated()) {
+      return res.status(400).json({
+        success: false,
+        error: "You're not logged in.",
+      });
+    }
+
     const { accessCode } = req.body;
+
+    if (!accessCode) {
+      return res.status(400).json({
+        success: false,
+        error: "Please enter an access code.",
+      });
+    }
 
     const accessCodeExists = await AccessCode.findOne({ accessCode });
 
@@ -58,7 +72,7 @@ router.post("/add-access-code", isPassportAuth, async (req, res) => {
       });
     }
 
-    if (accessCodeExists.isUsed) {
+    if (accessCodeExists.isUsed && accessCodeExists.isSingleUse) {
       return res.status(400).json({
         success: false,
         error: "Access Code already used",
@@ -72,7 +86,7 @@ router.post("/add-access-code", isPassportAuth, async (req, res) => {
     await user.save();
 
     accessCodeExists.isUsed = true;
-    accessCodeExists.referee = req.user;
+    accessCodeExists.referee.push(req.user);
     await accessCodeExists.save();
 
     res.status(200).json({
@@ -101,64 +115,49 @@ router.post("/add-access-code", isPassportAuth, async (req, res) => {
 router.get("/access-code-required", async (req, res) => {
   return res.status(200).json({
     success: true,
-    data: false,
+    data: process.env.ACCESS_CODE_REQUIRED === "true",
   });
 });
-
-// create access code (test function)
-// router.get("/create-access-code", async (req, res) => {
-//   try {
-//     const accessCode = new AccessCode({
-//       accessCode: Math.random().toString(36).substring(7).toUpperCase(),
-//       createdAt: new Date().toISOString(),
-//     });
-
-//     await accessCode.save();
-
-//     res.status(200).json({
-//       success: true,
-//       data: {
-//         message: "Access Code Created",
-//         accessCode,
-//       },
-//     });
-//   } catch (err) {
-//     console.error(err.message);
-//     res.status(500).json({
-//       success: false,
-//       error: err.message,
-//     });
-//   }
-// });
 
 router.post("/logout", (req, res) => {
-  req.logout();
-  res.status(200).json({
-    message: "Logged out",
-  });
+  try {
+    req.logout();
+    res.status(200).json({
+      message: "Logged out",
+    });
+  } catch (err) {
+    res.status(500).json({
+      success: false,
+      error: err.message,
+    });
+  }
 });
 
-// router.delete("/delete-account", async (req, res) => {
-//   try {
-//     // Delete all notes of the user
-//     await Note.deleteMany({ user: req.userId });
+// get access codes
+router.get("/access-codes", isPassportAuth, async (req, res) => {
+  try {
+    const DBAccessCodes = await AccessCode.find({ referrer: req.user._id });
 
-//     // Delete the user object itself
-//     await User.findByIdAndDelete(req.userId);
+    const accessCodes = DBAccessCodes.map((accessCode) => {
+      return {
+        _id: accessCode._id,
+        referrer: accessCode.referrer,
+        accessCode: accessCode.accessCode,
+        isUsed: accessCode.isUsed,
+        createdAt: accessCode.createdAt,
+      };
+    });
 
-//     res.status(200).json({
-//       success: true,
-//       data: {
-//         message: "Account Deleted",
-//       },
-//     });
-//   } catch (err) {
-//     console.error(err.message);
-//     res.status(500).json({
-//       success: false,
-//       error: err.message,
-//     });
-//   }
-// });
+    res.status(200).json({
+      success: true,
+      data: accessCodes,
+    });
+  } catch (err) {
+    res.status(500).json({
+      success: false,
+      error: err.message,
+    });
+  }
+});
 
 module.exports = router;
