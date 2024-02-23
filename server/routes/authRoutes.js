@@ -9,7 +9,6 @@ const isPassportAuth = require("../middleware/passportAuth");
 
 // Models
 const User = require("../models/User");
-const Note = require("../models/Note");
 const AccessCode = require("../models/AccessCode");
 
 require("../services/Passport");
