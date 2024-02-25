@@ -203,6 +203,50 @@ router.get("/get-notes", isPassportAuth, async (req, res) => {
   }
 });
 
+// home-feed (all notes in order of latest first except ones where isDemoNote is true)
+router.get("/home-feed", isAccessCodeOptionalPassportAuth, async (req, res) => {
+  try {
+    const notes = await Note.find({ isDemoNote: false }).sort({
+      createdAt: -1,
+    });
+
+    // notes with isLiked, isDisliked, and isPostedBySelf properties
+    const notesWithStatus = await Promise.all(
+      notes.map(async (note) => {
+        const DBLike = await Like.findOne({
+          note: note._id,
+          user: req.user?.id,
+        });
+
+        const DBDislike = await Dislike.findOne({
+          note: note._id,
+          user: req.user?.id,
+        });
+
+        return {
+          ...note._doc,
+          likes: null,
+          dislikes: null,
+          user: null,
+          isLiked: DBLike ? true : false,
+          isDisliked: DBDislike ? true : false,
+          isPostedBySelf: req.user?.id === note.user.toString(),
+        };
+      })
+    );
+
+    return res.status(200).json({
+      success: true,
+      data: notesWithStatus,
+    });
+  } catch (error) {
+    return res.status(500).json({
+      success: false,
+      error: error.message,
+    });
+  }
+});
+
 // Show note i.e. get note by id
 router.get("/show-note", isAccessCodeOptionalPassportAuth, async (req, res) => {
   const noteId = req.query.noteId;
