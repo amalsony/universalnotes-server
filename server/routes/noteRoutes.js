@@ -32,6 +32,9 @@ router.post("/add-note", upload.none(), isPassportAuth, async (req, res) => {
   const urlPath = getURLPathname(requestURL);
 
   try {
+    const isDemoNote =
+      urlDomain === "universalnotes.org" && urlPath.startsWith("/login/");
+
     const newNote = new Note({
       user: req.user?.id,
       body,
@@ -40,6 +43,7 @@ router.post("/add-note", upload.none(), isPassportAuth, async (req, res) => {
         path: urlPath,
         full_url: url,
       },
+      isDemoNote,
       createdAt: new Date().toISOString(),
     });
 

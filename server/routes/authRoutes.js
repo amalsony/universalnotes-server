@@ -10,9 +10,8 @@ const isPassportAuth = require("../middleware/passportAuth");
 // Models
 const User = require("../models/User");
 const AccessCode = require("../models/AccessCode");
-const { createAccessCode } = require("../utilities/createAccessCode");
 
-// const { createAccessCode } = require("../utilities/createAccessCode");
+const { createAccessCode } = require("../utilities/createAccessCode");
 
 require("../services/Passport");
 
@@ -196,7 +195,7 @@ router.get("/access-codes", isPassportAuth, async (req, res) => {
 //     const accessCode = await createAccessCode(
 //       "65d8fa4c40764a989d445b15",
 //       true,
-//       "MAIKOL"
+//       "CODE1234"
 //     );
 
 //     await accessCode.save();

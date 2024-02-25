@@ -47,6 +47,10 @@ const NoteSchema = new Schema({
     type: [String],
     index: true,
   },
+  isDemoNote: {
+    type: Boolean,
+    default: false,
+  },
   createdAt: {
     type: String,
     required: true,
