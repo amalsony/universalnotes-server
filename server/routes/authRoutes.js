@@ -162,53 +162,67 @@ router.get("/access-codes", isPassportAuth, async (req, res) => {
 });
 
 // test function create access codes
-// router.get("/create-access-codes", async (req, res) => {
-//   try {
-//     let accessCodes = [];
+router.get("/create-access-codes", async (req, res) => {
+  if (process.env.NODE_ENV !== "development") {
+    return res.status(400).json({
+      success: false,
+      error: "This endpoint is only available in development mode",
+    });
+  }
 
-//     for (let i = 1; i <= 46; i++) {
-//       const accessCode = await createAccessCode(
-//         "65d8fa4c40764a989d445b15",
-//         true,
-//         `WAITLIST${i}`
-//       );
+  try {
+    let accessCodes = [];
 
-//       await accessCode.save();
-//       accessCodes.push(accessCode);
-//     }
+    for (let i = 1; i <= 46; i++) {
+      const accessCode = await createAccessCode(
+        "65d8fa4c40764a989d445b15",
+        true,
+        `WAITLIST${i}`
+      );
 
-//     res.status(200).json({
-//       success: true,
-//       data: accessCodes,
-//     });
-//   } catch (err) {
-//     res.status(500).json({
-//       success: false,
-//       error: err.message,
-//     });
-//   }
-// });
+      await accessCode.save();
+      accessCodes.push(accessCode);
+    }
+
+    res.status(200).json({
+      success: true,
+      data: accessCodes,
+    });
+  } catch (err) {
+    res.status(500).json({
+      success: false,
+      error: err.message,
+    });
+  }
+});
 
 // create a single access code
-// router.get("/create-access-code", async (req, res) => {
-//   try {
-//     const accessCode = await createAccessCode(
-//       "65d8fa4c40764a989d445b15",
-//       true,
-//       "CODE1234"
-//     );
+router.get("/create-access-code", async (req, res) => {
+  if (process.env.NODE_ENV !== "development") {
+    return res.status(400).json({
+      success: false,
+      error: "This endpoint is only available in development mode",
+    });
+  }
 
-//     await accessCode.save();
-//     res.status(200).json({
-//       success: true,
-//       data: accessCode,
-//     });
-//   } catch (err) {
-//     res.status(500).json({
-//       success: false,
-//       error: err.message,
-//     });
-//   }
-// });
+  try {
+    const accessCode = await createAccessCode(
+      "65d8fa4c40764a989d445b15",
+      true,
+      "CODE1234"
+    );
+
+    await accessCode.save();
+    res.status(200).json({
+      success: true,
+      data: accessCode,
+    });
+  } catch (err) {
+    res.status(500).json({
+      success: false,
+      error: err.message,
+    });
+  }
+});
 
 module.exports = router;

@@ -35,14 +35,10 @@ app.use(passport.session());
 // Routes
 const authRoutes = require("./routes/authRoutes");
 const noteRoutes = require("./routes/noteRoutes");
-// const userRoutes = require("./routes/userRoutes");
-// const testRoutes = require("./routes/testRoutes"); // remove this before pushing to prod
 
 // Use routes
 app.use("/auth", authRoutes); // Auth Routes
 app.use("/notes", noteRoutes); // Note Routes
-// app.use("/user", userRoutes); // User Routes
-// app.use("/test", testRoutes); // remove this before pushing to prod
 
 app.listen(port, () => {
   console.log(`Server is listening on port ${port}`);
