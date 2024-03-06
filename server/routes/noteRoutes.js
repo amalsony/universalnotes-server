@@ -128,6 +128,12 @@ router.get("/get-note", async (req, res) => {
       user: req.user?.id,
     });
 
+    // if the note has less than 5 combined likes or dislikes, add a line "*This is a proposed note.* \n\n" to the note body
+    const proposedBody =
+      note && note.like_count + note.dislike_count < 5
+        ? `*This is a proposed note*\n\n${note.body}\n\n *Rate this note to display it to all UniversalNotes members*`
+        : note.body;
+
     // if the note exists, return the note
     if (note && !hidden) {
       return res.status(200).json({
@@ -135,7 +141,7 @@ router.get("/get-note", async (req, res) => {
         showPopup: true,
         message: {
           _id: note._id,
-          body: note.body,
+          body: proposedBody,
           like_count: note.like_count,
           dislike_count: note.dislike_count,
           createdAt: note.createdAt,
@@ -271,6 +277,11 @@ router.get("/show-note", isAccessCodeOptionalPassportAuth, async (req, res) => {
       user: req.user?.id,
     });
 
+    const proposedBody =
+      note && note.like_count + note.dislike_count < 5
+        ? `*This is a proposed note*\n\n${note.body}\n\n *Rate this note to display it to all UniversalNotes members*`
+        : note.body;
+
     return res.status(200).json({
       success: true,
       note: {
@@ -278,6 +289,7 @@ router.get("/show-note", isAccessCodeOptionalPassportAuth, async (req, res) => {
         likes: null,
         dislikes: null,
         user: null,
+        body: proposedBody,
         isLiked: DBLike ? true : false,
         isDisliked: DBDislike ? true : false,
         isPostedBySelf: req.user?.id === note.user.toString(),
