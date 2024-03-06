@@ -229,11 +229,17 @@ router.get("/home-feed", isAccessCodeOptionalPassportAuth, async (req, res) => {
           user: req.user?.id,
         });
 
+        const proposedBody =
+          note && note.like_count + note.dislike_count < 5
+            ? `*This is a proposed note*\n\n${note.body}\n\n *Rate this note to display it to all UniversalNotes members*`
+            : note.body;
+
         return {
           ...note._doc,
           likes: null,
           dislikes: null,
           user: null,
+          body: proposedBody,
           isLiked: DBLike ? true : false,
           isDisliked: DBDislike ? true : false,
           isPostedBySelf: req.user?.id === note.user.toString(),
