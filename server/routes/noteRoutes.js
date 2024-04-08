@@ -320,7 +320,7 @@ router.get("/hidden-notes", isPassportAuth, async (req, res) => {
   try {
     const hiddens = await Hidden.find({ user: req.user?.id });
 
-    const hiddenNotes = await Promise.all(
+    let hiddenNotes = await Promise.all(
       hiddens.map(async (hidden) => {
         const note = await Note.findById(hidden.note);
 
@@ -352,8 +352,7 @@ router.get("/hidden-notes", isPassportAuth, async (req, res) => {
       })
     );
 
-    // remove any null values from the hiddenNotes array
-    hiddenNotes.filter((note) => note);
+    hiddenNotes = hiddenNotes.filter((note) => note);
 
     return res.status(200).json({
       success: true,
