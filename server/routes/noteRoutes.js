@@ -352,6 +352,9 @@ router.get("/hidden-notes", isPassportAuth, async (req, res) => {
       })
     );
 
+    // remove any null values from the hiddenNotes array
+    hiddenNotes.filter((note) => note);
+
     return res.status(200).json({
       success: true,
       data: hiddenNotes,
