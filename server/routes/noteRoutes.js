@@ -325,12 +325,12 @@ router.get("/hidden-notes", isPassportAuth, async (req, res) => {
         const note = await Note.findById(hidden.note);
 
         const DBLike = await Like.findOne({
-          note: note._id,
+          note: note?._id,
           user: req.user?.id,
         });
 
         const DBDislike = await Dislike.findOne({
-          note: note._id,
+          note: note?._id,
           user: req.user?.id,
         });
 
