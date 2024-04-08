@@ -315,6 +315,51 @@ router.get("/show-note", isAccessCodeOptionalPassportAuth, async (req, res) => {
   }
 });
 
+// Get hidden notes
+router.get("/hidden-notes", isPassportAuth, async (req, res) => {
+  try {
+    const hiddens = await Hidden.find({ user: req.user?.id });
+
+    const hiddenNotes = await Promise.all(
+      hiddens.map(async (hidden) => {
+        const note = await Note.findById(hidden.note);
+
+        const DBLike = await Like.findOne({
+          note: note._id,
+          user: req.user?.id,
+        });
+
+        const DBDislike = await Dislike.findOne({
+          note: note._id,
+          user: req.user?.id,
+        });
+
+        return {
+          ...note._doc,
+          likes: null,
+          dislikes: null,
+          user: null,
+          body: note.body,
+          isLiked: DBLike ? true : false,
+          isDisliked: DBDislike ? true : false,
+          isHidden: true,
+          isPostedBySelf: req.user?.id === note.user.toString(),
+        };
+      })
+    );
+
+    return res.status(200).json({
+      success: true,
+      data: hiddenNotes,
+    });
+  } catch (error) {
+    return res.status(500).json({
+      success: false,
+      error: error.message,
+    });
+  }
+});
+
 // Hide note
 router.post("/hide-note", isPassportAuth, async (req, res) => {
   // add note to user's hidden_notes array
@@ -327,6 +372,32 @@ router.post("/hide-note", isPassportAuth, async (req, res) => {
       return res.status(404).json({
         success: false,
         message: "User not found",
+      });
+    }
+
+    // check if the note exists
+    const note = await Note.findById(noteId);
+
+    if (!note) {
+      return res.status(404).json({
+        success: false,
+        message: "Note not found",
+      });
+    }
+
+    // check if the user has already hidden the note
+    const DBHidden = await Hidden.findOne({
+      note: noteId,
+      user: req.user?.id,
+    });
+
+    if (DBHidden) {
+      // unhide the note
+      await Hidden.deleteOne({ _id: DBHidden._id });
+
+      return res.status(200).json({
+        success: true,
+        message: "Note unhidden successfully",
       });
     }
 
