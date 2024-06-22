@@ -25,7 +25,7 @@ const {
 const blockedPages = require("../utilities/blockedPages");
 
 router.post("/add-note", upload.none(), isPassportAuth, async (req, res) => {
-  const { body, url: requestURL } = req.body;
+  const { body, url: requestURL, isAgainstContext } = req.body;
 
   const url = getCleanURL(requestURL);
   const urlDomain = getURLDomain(requestURL);
@@ -44,6 +44,7 @@ router.post("/add-note", upload.none(), isPassportAuth, async (req, res) => {
         full_url: url,
       },
       isDemoNote,
+      isAgainstContext: isAgainstContext === "true" ? true : false,
       createdAt: new Date().toISOString(),
     });
 
@@ -108,7 +109,13 @@ router.get("/get-note", async (req, res) => {
 
   try {
     // find the latest note with the given URL
-    const note = await Note.findOne({ "url.full_url": url }).sort({
+    const note = await Note.findOne({
+      "url.full_url": url,
+      $or: [
+        { isAgainstContext: { $exists: false } },
+        { isAgainstContext: false },
+      ],
+    }).sort({
       createdAt: -1,
     });
 

@@ -51,6 +51,10 @@ const NoteSchema = new Schema({
     type: Boolean,
     default: false,
   },
+  isAgainstContext: {
+    type: Boolean,
+    default: false,
+  },
   createdAt: {
     type: String,
     required: true,
